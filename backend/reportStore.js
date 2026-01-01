@@ -1,124 +1,138 @@
 // backend/reportStore.js
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
 
-// ----------------------
-// Config
-// ----------------------
-const REPORTS_FILE = process.env.REPORTS_FILE
-  ? path.resolve(__dirname, process.env.REPORTS_FILE)
-  : path.resolve(__dirname, "reports.json");
+const {
+  REPORTS_FILE,
+  EXPORTS_DIR,
+  MAX_REPORTS,
+  PURGE_EXPORTS
+} = require("./config");
 
-const EXPORTS_DIR = process.env.EXPORTS_DIR
-  ? path.resolve(__dirname, process.env.EXPORTS_DIR)
-  : path.resolve(__dirname, "exports");
+// -----------------------------
+// Ensure storage exists
+// -----------------------------
+function ensureReportsFile() {
+  const dir = path.dirname(REPORTS_FILE);
 
-const MAX_REPORTS = parseInt(process.env.MAX_REPORTS || "100", 10);
-const PURGE_EXPORTS = String(process.env.PURGE_EXPORTS || "true") === "true";
+  // Create folder if missing
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 
-// ----------------------
-// Ensure store file exists
-// ----------------------
-function ensureStore() {
+  // Create empty reports.json if missing
   if (!fs.existsSync(REPORTS_FILE)) {
-    fs.writeFileSync(REPORTS_FILE, JSON.stringify([]), "utf-8");
+    fs.writeFileSync(REPORTS_FILE, JSON.stringify([], null, 2), "utf-8");
   }
 }
 
-// ----------------------
-// Safe Load
-// ----------------------
-function loadStore() {
-  ensureStore();
+// -----------------------------
+// Load all reports
+// -----------------------------
+function loadReports() {
+  ensureReportsFile();
   try {
-    return JSON.parse(fs.readFileSync(REPORTS_FILE, "utf-8"));
+    const raw = fs.readFileSync(REPORTS_FILE, "utf-8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch (err) {
-    console.warn("⚠️ reports.json corrupted — resetting:", err.message);
-    fs.writeFileSync(REPORTS_FILE, JSON.stringify([]), "utf-8");
+    console.warn("⚠️ reports.json corrupted. Rebuilding empty store...");
+    fs.writeFileSync(REPORTS_FILE, JSON.stringify([], null, 2), "utf-8");
     return [];
   }
 }
 
-// ----------------------
-// Save Store
-// ----------------------
-function saveStore(data) {
-  fs.writeFileSync(REPORTS_FILE, JSON.stringify(data, null, 2), "utf-8");
+// -----------------------------
+// Save reports list safely
+// -----------------------------
+function saveReports(reports) {
+  ensureReportsFile();
+  fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports, null, 2), "utf-8");
 }
 
-// ----------------------
-// Purge helper
-// ----------------------
+// -----------------------------
+// Delete export files safely
+// -----------------------------
+function deleteExports(exportObj = {}) {
+  if (!exportObj || typeof exportObj !== "object") return;
+
+  const exportPaths = Object.values(exportObj); // markdown, html, pdf
+
+  exportPaths.forEach((relPath) => {
+    if (!relPath) return;
+
+    // example: "/exports/report_123.pdf"
+    const cleanPath = relPath.replace("/exports/", "");
+    const absPath = path.join(EXPORTS_DIR, cleanPath);
+
+    try {
+      if (fs.existsSync(absPath)) {
+        fs.unlinkSync(absPath);
+        console.log("🧹 Deleted export:", absPath);
+      }
+    } catch (err) {
+      console.warn("⚠️ Failed to delete export:", absPath, err.message);
+    }
+  });
+}
+
+// -----------------------------
+// Purge Oldest Reports
+// -----------------------------
 function purgeOldReports(reports) {
-  if (reports.length <= MAX_REPORTS) return reports;
+  const max = parseInt(MAX_REPORTS || "100", 10);
 
-  const removed = reports.splice(MAX_REPORTS);
+  if (!max || reports.length <= max) return reports;
 
-  // ✅ Remove exports of purged reports
-  if (PURGE_EXPORTS) {
-    removed.forEach(r => {
-      if (!r.exports) return;
+  // Sort by createdAt (oldest first)
+  const sorted = [...reports].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
-      const targets = [
-        r.exports.markdown,
-        r.exports.html,
-        r.exports.pdf
-      ].filter(Boolean);
+  const overflow = sorted.length - max;
+  const removed = sorted.slice(0, overflow);
+  const kept = sorted.slice(overflow);
 
-      targets.forEach(urlPath => {
-        const filename = urlPath.replace("/exports/", "");
-        const filePath = path.join(EXPORTS_DIR, filename);
+  console.log(`🧹 Purging ${removed.length} old reports (limit ${max})...`);
 
-        if (fs.existsSync(filePath)) {
-          try {
-            fs.unlinkSync(filePath);
-          } catch (_) {}
-        }
-      });
-    });
+  if (PURGE_EXPORTS === true || PURGE_EXPORTS === "true") {
+    removed.forEach((r) => deleteExports(r.exports));
   }
 
-  return reports;
+  saveReports(kept);
+  return kept;
 }
 
-// ----------------------
-// ✅ Save full report record
-// ----------------------
-function saveReport(report) {
-  const reports = loadStore();
-  reports.unshift(report); // newest first
+// -----------------------------
+// API FUNCTIONS
+// -----------------------------
+function saveReport(reportObj) {
+  let reports = loadReports();
 
-  // Purge beyond MAX_REPORTS
-  purgeOldReports(reports);
+  reports.push(reportObj);
+  reports = purgeOldReports(reports);
 
-  saveStore(reports);
+  saveReports(reports);
+  return reportObj;
 }
 
-// ----------------------
-// ✅ List reports (summary only)
-// ----------------------
 function listReports() {
-  return loadStore().map(r => ({
-    id: r.id,
-    fileName: r.fileName,
-    intent: r.intent,
-    createdAt: r.createdAt,
-    sourceType: r.sourceType,
-    rows: r.rows,
-    cols: r.cols,
-    exports: r.exports
-  }));
+  const reports = loadReports();
+
+  // Return latest first
+  return reports.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
-// ----------------------
-// ✅ Get full report by ID
-// ----------------------
-function getReport(reportId) {
-  const reports = loadStore();
-  return reports.find(r => String(r.id) === String(reportId));
+function getReport(id) {
+  const reports = loadReports();
+  return reports.find((r) => String(r.id) === String(id));
 }
 
+// -----------------------------
+// Export
+// -----------------------------
 module.exports = {
   saveReport,
   listReports,

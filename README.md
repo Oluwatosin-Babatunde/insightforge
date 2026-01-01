@@ -1,191 +1,272 @@
-# InsightForge v1.0  
-**Offline AI Analytics Engine for CSV / Excel / JSON Data**
+# InsightForge (v1.0)
 
-InsightForge is a lightweight, offline-first analytics engine that allows users to upload structured datasets and query insights using natural language intents.
+InsightForge is a lightweight AI-powered data profiling and reporting tool.
 
-It automatically generates:
+Upload a CSV or Excel dataset, provide an analysis intent (example: “trend over time”), and InsightForge generates an analyst-style report with:
 
-- Executive Summary  
-- KPI Profiling  
-- Data Quality Score  
-- Duplicate + Missing Value Detection  
-- Smart Suggestions (automatic intent prompts)  
-- Intent-Based Analyst Answers (with computation)  
-- Charts (auto-generated images inside report)  
-- Dataset Story (what the dataset likely represents)  
-- Final Take (practical business conclusions)  
-- Export Reports (Markdown, HTML, PDF)  
-- Report History Storage + Retrieval
-
----
-
-## Why InsightForge?
-Most tools require SQL skills or rigid dashboards. InsightForge allows anyone to analyze datasets using natural language.
-
-Example intents:
-- `"trend over time"`
-- `"distribution by status"`
-- `"missing values breakdown"`
-- `"duplicates check"`
-- `"sum amount by department"`
-- `"highest earnings by employee"`
-- `"top 10 rows by revenue"`
+✅ Executive summary  
+✅ Data quality score  
+✅ Duplicate + missing value analysis  
+✅ Trend + segmentation insights  
+✅ Charts + simple English explanations  
+✅ Exportable reports (Markdown, HTML, PDF)  
 
 ---
 
 ## Features
-### Flexible Natural Language Querying
-InsightForge detects your intent and responds like a real analyst:
-- Explains what it is doing
-- Computes answers
-- Generates supporting charts
 
-### Offline Charts + Visuals
-Charts are embedded as base64 images directly inside the report.
-
-### Export Reports
-Reports can be downloaded as:
-- `.MD`
-- `.HTML`
-- `.PDF`
-
-### Persistent Report History
-Reports are saved automatically and accessible inside the UI.
-
-### Built for Everyone
-Works across thousands of datasets with zero configuration.
+- Upload datasets (CSV / Excel)
+- Auto detects schema, numeric vs categorical fields
+- Generates AI-enhanced narrative analysis
+- Produces visual trend and distribution charts
+- Exports reports to:
+  - `.md`
+  - `.html`
+  - `.pdf`
+- Auto purges old reports based on config
 
 ---
 
 ## Project Structure
+
 ```
 
 workflow-ai-ops/
-├── backend/             # Node.js Express backend
-├── frontend/            # Tailwind single page UI
-├── python_engine/       # Python analysis engine
-├── docs/                # Documentation + roadmap
-├── examples/            # Sample datasets & reports
+├── backend/
+├── frontend/
+├── python_engine/
+├── docs/
+├── examples/
 └── README.md
 
 ````
 
 ---
 
-## Tech Stack
-**Frontend**
-- TailwindCSS
-- Marked.js
-- Font Awesome Icons
+## Requirements
 
-**Backend**
-- Node.js + Express
-- Multer file uploads
-- Puppeteer PDF exports
-- JSON file-based report store
-
-**Python Engine**
-- Pandas + NumPy
-- Matplotlib for charts
-- Natural language intent engine
+- Node.js v18+ (recommended)
+- Python 3.10+ (for report generation)
+- pip (Python package manager)
 
 ---
 
-## Installation & Setup
-### Clone repo
+## 🔧 Setup Instructions
+
+### 1. Clone the repo
+
 ```bash
-git clone https://github.com/yourusername/insightforge.git
+git clone https://github.com/Oluwatosin-Babatunde/insightforge.git
 cd insightforge
 ````
 
-### 2️⃣ Backend install
+---
+
+### 2. Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-### 3️⃣ Python dependencies
+✅ Create your local `.env` file:
 
-Make sure Python 3 is installed, then run:
+```bash
+cp ../.env.example .env
+```
+
+Then edit `.env` and confirm your paths:
+
+```env
+PORT=5050
+EXPORTS_DIR=./exports
+REPORTS_FILE=./reports.json
+MAX_REPORTS=100
+PURGE_EXPORTS=true
+```
+
+---
+
+### 3. Python Setup
+
+Go to the Python engine folder:
+
+```bash
+cd ../python_engine
+pip install -r requirements.txt
+```
+
+✅ If you do not have `requirements.txt` yet, run this manually:
 
 ```bash
 pip install pandas numpy matplotlib openpyxl
 ```
 
-### 4️⃣ Setup `.env`
+---
 
-Copy `.env.example` to `.env`:
+### 4. Start the Server
 
-```bash
-cp .env.example .env
-```
-
-### 5️⃣ Start the backend
+From the backend folder:
 
 ```bash
-cd backend
+cd ../backend
 npm run dev
 ```
 
-Now open:
-[http://localhost:5050](http://localhost:5050)
+Server runs at:
+
+✅ `http://localhost:5050`
 
 ---
 
-## Environment Configuration
+### 5. Open the Frontend
 
-InsightForge supports full control via `.env`
-
-| Key           | Purpose                          | Default          |
-| ------------- | -------------------------------- | ---------------- |
-| PORT          | Backend port                     | `5050`           |
-| EXPORTS_DIR   | Export output folder             | `./exports`      |
-| REPORTS_FILE  | Report store database            | `./reports.json` |
-| MAX_REPORTS   | Number of reports saved          | `100`            |
-| PURGE_EXPORTS | Remove export files when purging | `true`           |
+```bash
+cd ../frontend
+open index.html
+```
 
 ---
 
-## Cleanup / Purge Strategy
+## Testing with Example Dataset
 
-InsightForge automatically purges old reports if they exceed `MAX_REPORTS`.
+Example dataset exists at:
 
-If `PURGE_EXPORTS=true`, export files (MD/HTML/PDF) are deleted automatically when a report is purged.
+```bash
+examples/sample_input.csv
+```
+
+Upload it via the UI and try these intents:
+
+✅ `trend over time using workDate`
+✅ `distribution by department`
+✅ `duplicates check`
+✅ `missing values breakdown`
+✅ `sum amount by category`
 
 ---
 
-## Git Ignore Strategy
+## Exports
 
-Generated files are not tracked:
+Reports are generated into:
 
-* `/backend/exports/`
-* `/backend/reports.json`
+```
+backend/exports/
+```
 
-A `.gitkeep` file is used to preserve empty folders in GitHub.
+and served publicly at:
+
+✅ `http://localhost:5050/exports`
+
+Example:
+
+```
+http://localhost:5050/exports/report_1234567890.html
+```
 
 ---
 
-## Roadmap (v1.1+)
+## Auto Cleanup (Purge Strategy)
 
-* Multi-file dataset ingestion
-* AI-assisted insight summarization (LLM plug-in)
-* Interactive charts (Plotly)
-* Search inside report history
-* Export to PowerPoint
-* Cloud deploy option
+InsightForge can automatically delete old reports.
+
+Controlled using `.env`:
+
+| Setting              | Meaning                               |
+| -------------------- | ------------------------------------- |
+| `MAX_REPORTS=100`    | Keep only the latest 100 reports      |
+| `PURGE_EXPORTS=true` | Deletes files when reports are purged |
+
+---
+
+## Git Ignore + Safety
+
+The following files are ignored automatically:
+
+* `.env`
+* `backend/exports/*` (except `.gitkeep`)
+* `node_modules/`
+* runtime logs
+* reportStore database file (`backend/reports.json`)
+
+This keeps the repository clean and prevents accidental pushing of generated reports.
+
+---
+
+## Troubleshooting
+
+### Error: Cannot find module 'dotenv'
+
+Fix:
+
+```bash
+cd backend
+npm install dotenv
+```
+
+---
+
+### Python export errors
+
+Ensure dependencies are installed:
+
+```bash
+pip install pandas numpy matplotlib openpyxl
+```
+
+---
+
+### PDF export not working
+
+This is usually caused by missing dependencies (like wkhtmltopdf or chromium).
+For v1.0, markdown and html export works best.
+PDF export will be improved in future versions.
+
+---
+
+## Roadmap
+
+This is **v1.0 release**.
+We will update the tool based on feedback from users in the coming year.
+
+Planned improvements:
+
+* better PDF export reliability
+* smart intent auto-correction
+* richer chart caption explanations
+* more advanced anomaly detection
+* connectors for Google Sheets and APIs
+
+---
+
+## Contributing
+
+Pull requests are welcome.
+
+If you want to propose improvements:
+
+1. Fork the repo
+2. Create a new branch
+3. Submit a PR
+
+---
+
+## Feedback
+
+If you use InsightForge, please share feedback:
+
+* what worked well
+* what was confusing
+* what you want next
+* need feedback to make it better.
 
 ---
 
 ## Author
 
-Developed by **Oluwatosin Agbaakin**
-Licensed under the MIT License
+Built by **Oluwatosin Babatunde**
+GitHub: `@Oluwatosin-Babatunde`
+
+````
 
 ---
-
-## Support the Project
-
-If this helped you, star the repo and share it with your community 
-
-```

@@ -1,6 +1,11 @@
 // backend/server.js
 require("dotenv").config();
 
+try {
+  require("dotenv").config();
+} catch (_) {
+  console.warn("dotenv not installed — skipping .env loading");
+}
 const express = require("express");
 const cors = require("cors");
 const path = require("path");

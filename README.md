@@ -4,12 +4,12 @@ InsightForge is a lightweight AI-powered data profiling and reporting tool.
 
 Upload a CSV or Excel dataset, provide an analysis intent (example: “trend over time”), and InsightForge generates an analyst-style report with:
 
-✅ Executive summary  
-✅ Data quality score  
-✅ Duplicate + missing value analysis  
-✅ Trend + segmentation insights  
-✅ Charts + simple English explanations  
-✅ Exportable reports (Markdown, HTML, PDF)  
+- Executive summary  
+- Data quality score  
+- Duplicate + missing value analysis  
+- Trend + segmentation insights  
+- Charts + simple English explanations  
+- Exportable reports (Markdown, HTML, PDF)  
 
 ---
 
@@ -51,7 +51,7 @@ workflow-ai-ops/
 
 ---
 
-## 🔧 Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the repo
 
@@ -69,7 +69,7 @@ cd backend
 npm install
 ```
 
-✅ Create your local `.env` file:
+Create your local `.env` file:
 
 ```bash
 cp ../.env.example .env
@@ -96,7 +96,7 @@ cd ../python_engine
 pip install -r requirements.txt
 ```
 
-✅ If you do not have `requirements.txt` yet, run this manually:
+If you do not have `requirements.txt` yet, run this manually:
 
 ```bash
 pip install pandas numpy matplotlib openpyxl
@@ -115,7 +115,7 @@ npm run dev
 
 Server runs at:
 
-✅ `http://localhost:5050`
+`http://localhost:5050`
 
 ---
 
@@ -138,11 +138,11 @@ examples/sample_input.csv
 
 Upload it via the UI and try these intents:
 
-✅ `trend over time using workDate`
-✅ `distribution by department`
-✅ `duplicates check`
-✅ `missing values breakdown`
-✅ `sum amount by category`
+- `trend over time using workDate`
+- `distribution by department`
+- `duplicates check`
+- `missing values breakdown`
+- `sum amount by category`
 
 ---
 
@@ -156,7 +156,7 @@ backend/exports/
 
 and served publicly at:
 
-✅ `http://localhost:5050/exports`
+`http://localhost:5050/exports`
 
 Example:
 
@@ -268,5 +268,3 @@ Built by **Oluwatosin Babatunde**
 GitHub: `@Oluwatosin-Babatunde`
 
 ````
-
----

@@ -72,7 +72,7 @@ workflow-ai-ops/
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️Tech Stack
 **Frontend**
 - TailwindCSS
 - Marked.js
